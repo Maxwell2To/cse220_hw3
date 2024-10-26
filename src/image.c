@@ -13,10 +13,36 @@ Image *load_image(char *filename) {
     strncpy(imgPtr->filename, filename, strlen(filename));
 
     char skipP3[5];
-    fscanf(filePtr, "%s", skipP3);
+    memset(skipP3, 0, sizeof(skipP3));
+    fgets(skipP3, sizeof(skipP3), filePtr);
+    //printf("skipP3 is %s", skipP3);
+
+    int checkCommentSection = 1;
+    while (checkCommentSection) {
+        char ch;
+        ch = fgetc(filePtr);
+        if (ch != EOF) {
+            //printf("You got in the first character, it is [%c]\n", ch);
+            if (ch == '#') {
+                //printf("You hit a comment\n");
+                char buffer[256];
+                if (fscanf(filePtr, "%[^\n]%*c", buffer) == EOF) /////////////////////skips entire line
+                    return NULL;
+            }
+            else {
+                fseek(filePtr, -1L, SEEK_CUR);
+                checkCommentSection = 0;
+            }
+        }
+        else {
+            return NULL;
+        }
+    }
+
     fscanf(filePtr, "%hu %hu", &(imgPtr->width), &(imgPtr->height));
     unsigned short skipIntensity = 0;
     fscanf(filePtr, "%hu", &skipIntensity);
+    //printf("width is %hu and height is %hu and the intensity is %hu\n", imgPtr->width, imgPtr->height, skipIntensity);
 
     size_t totalPixelSize = sizeof(unsigned char) * ((imgPtr->width) * (imgPtr->height));
 
@@ -28,7 +54,7 @@ Image *load_image(char *filename) {
     while( fscanf(filePtr, "%hu %hu %hu", &redInt, &blueInt, &greenInt) != EOF )
     {
         *(imgPtr->pixelIntensityArr + offset) = (unsigned char)redInt;
-                printf("pixel number is %u and the intensity is %u/n", offset, redInt);  ///////////////////////////////////////////// DELETE AFTER TESTING
+                //printf("pixel number is %u and the intensity is %u\n", offset, redInt);  ///////////////////////////////////////////// DELETE AFTER TESTING
         offset++;
     }
     fclose(filePtr);
