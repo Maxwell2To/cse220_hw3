@@ -8,7 +8,10 @@
 #define ERROR(...) do {fprintf(stderr, "[          ] [ ERR  ] "); fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n"); fflush(stderr);} while(0) 
 
 typedef struct Image {
-    char placeholder[1];  // This is a placeholder. You should not use this struct.
+    char *filename;
+    unsigned short width; 
+    unsigned short height; 
+    unsigned char *pixelIntensityArr;
 } Image;
 
 Image *load_image(char *filename);
