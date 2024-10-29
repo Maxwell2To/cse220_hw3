@@ -1,9 +1,84 @@
 #include "qtree.h"
+#include "math.h"
+QTNode* createNode(unsigned char intensity, unsigned int startRow, unsigned int pixHeight, unsigned int startCol, unsigned int pixWidth);
+
+double getAverageIntensity(Image *image, unsigned int startRow, unsigned int startCol, unsigned int pixHeight, unsigned int pixWidth){
+    ////////////////to get average intensity, just make a simple nested for loop that goes pixel by pixel
+    //////////////it will tally up all the pixel intensities and calculate average
+    //////////to get number of pixels, just multipy height by width
+    double numOfPixels = (double) pixHeight * pixWidth;
+    double sumIntensity = 0.0;
+    for (unsigned int i = startRow; i < pixHeight; i++) {
+        for (unsigned int j = startCol; j < pixWidth; j++) {
+            sumIntensity += (double) get_image_intensity(image, i, j);
+        }
+    }
+    return sumIntensity / numOfPixels;
+}
+
+double calculateRMSE(Image *image, unsigned int startRow, unsigned int startCol, unsigned int pixHeight, unsigned int pixWidth){
+    double averageIntensity = getAverageIntensity(image, startRow, startCol, pixHeight, pixWidth);
+    double numOfPixels = (double) pixHeight * pixWidth;
+    double sumOfSquaredDiff = 0.0;
+
+    for (unsigned int i = startRow; i < pixHeight; i++) {
+        for (unsigned int j = startCol; j < pixWidth; j++) {
+            sumOfSquaredDiff += pow(((double) get_image_intensity(image, i, j) - averageIntensity), 2);
+        }
+    }
+    return sqrt(sumOfSquaredDiff/numOfPixels);
+}
+
+//recursive function 
+QTNode *makeQTTree(Image *image, double max_rmse, unsigned int startRow, unsigned int startCol, unsigned int pixHeight, unsigned int pixWidth){
+    double averageIntensity = getAverageIntensity(image, startRow, startCol, pixHeight, pixWidth);
+
+    QTNode *temp = createNode((unsigned char)averageIntensity, 0, get_image_height(image), 0, get_image_width(image));
+
+    if(calculateRMSE(image, startRow, startCol, pixHeight, pixWidth) > max_rmse){
+        ///you know you have to split
+        //Calculate quadrant 1 (child 1)
+        //calculate child 1's startRow, StartCol, height, width
+        temp->child1 = makeQTTree(image, max_rmse, startRow, startCol, pixHeight / 2, pixWidth / 2);
+
+        if (pixWidth != 1)
+            temp->child2 = makeQTTree(image, max_rmse, startRow, startCol + pixWidth / 2, pixHeight / 2, pixWidth / 2);
+
+        if (pixHeight != 1)
+            temp->child3 = makeQTTree(image, max_rmse, startRow + pixHeight / 2, startCol, pixHeight / 2, pixWidth / 2);
+
+        if (pixHeight != 1 && pixWidth != 1)
+            temp->child4 = makeQTTree(image, max_rmse, startRow + pixHeight / 2, startCol + pixWidth / 2, pixHeight / 2, pixWidth / 2);
+
+        //if your child 2 width is greater than 0, make a QTTree. Otherwise, it will remain as null
+        //temp->child2 = makeQTTree(image, temp, max_rmse, childStartRow, childStartCol, childPixHeight, childPixWidth)
+
+        //if your child 3 height is greater than 0, make a QTTree. Otherwise, it will remain as null
+        //temp->child3 = makeQTTree(image, temp, max_rmse, childStartRow, childStartCol, childPixHeight, childPixWidth)
+
+        //if your child 4 height is greater than 0, make a QTTree. Otherwise, it will remain as null
+        //temp->child4 = makeQTTree(image, temp, max_rmse, childStartRow, childStartCol, childPixHeight, childPixWidth)
+
+        //every child must have startRow, startCol, pixHeight, pixWidth set specifically for them
+
+/*To handle the special case of a single row of pixels, split the row of pixels in half, setting children 3 and 4 to NULL. 
+Likewise, to handle the special case of a single column of pixels, split the column in half, setting children 2 and 4 to NULL.
+*/
+
+
+    }
+    ///you dont have to split
+    return temp;
+
+}
 
 QTNode *create_quadtree(Image *image, double max_rmse) {
-    (void)image;
-    (void)max_rmse;
-    return NULL;
+    if (image == NULL){
+        return NULL;
+    }
+
+    QTNode * root = makeQTTree(image, max_rmse, 0, 0, image->height, image->width);
+    return root;
 }
 
 QTNode *get_child1(QTNode *node) {
