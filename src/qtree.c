@@ -41,13 +41,13 @@ QTNode *makeQTTree(Image *image, double max_rmse, unsigned int startRow, unsigne
         //calculate child 1's startRow, StartCol, height, width
         temp->child1 = makeQTTree(image, max_rmse, startRow, startCol, pixHeight / 2, pixWidth / 2);
 
-        if (pixWidth != 1)
+        if (pixWidth > 1)
             temp->child2 = makeQTTree(image, max_rmse, startRow, startCol + pixWidth / 2, pixHeight / 2, pixWidth / 2);
 
-        if (pixHeight != 1)
+        if (pixHeight > 1)
             temp->child3 = makeQTTree(image, max_rmse, startRow + pixHeight / 2, startCol, pixHeight / 2, pixWidth / 2);
 
-        if (pixHeight != 1 && pixWidth != 1)
+        if (pixHeight > 1 && pixWidth > 1)
             temp->child4 = makeQTTree(image, max_rmse, startRow + pixHeight / 2, startCol + pixWidth / 2, pixHeight / 2, pixWidth / 2);
 
         //if your child 2 width is greater than 0, make a QTTree. Otherwise, it will remain as null
@@ -60,12 +60,6 @@ QTNode *makeQTTree(Image *image, double max_rmse, unsigned int startRow, unsigne
         //temp->child4 = makeQTTree(image, temp, max_rmse, childStartRow, childStartCol, childPixHeight, childPixWidth)
 
         //every child must have startRow, startCol, pixHeight, pixWidth set specifically for them
-
-/*To handle the special case of a single row of pixels, split the row of pixels in half, setting children 3 and 4 to NULL. 
-Likewise, to handle the special case of a single column of pixels, split the column in half, setting children 2 and 4 to NULL.
-*/
-
-
     }
     ///you dont have to split
     return temp;
