@@ -3,13 +3,10 @@
 QTNode* createNode(unsigned char intensity, unsigned int startRow, unsigned int pixHeight, unsigned int startCol, unsigned int pixWidth);
 
 double getAverageIntensity(Image *image, unsigned int startRow, unsigned int startCol, unsigned int pixHeight, unsigned int pixWidth){
-    ////////////////to get average intensity, just make a simple nested for loop that goes pixel by pixel
-    //////////////it will tally up all the pixel intensities and calculate average
-    //////////to get number of pixels, just multipy height by width
     double numOfPixels = (double) pixHeight * pixWidth;
     double sumIntensity = 0.0;
-    for (unsigned int i = startRow; i < pixHeight; i++) {
-        for (unsigned int j = startCol; j < pixWidth; j++) {
+    for (unsigned int i = startRow; i < startRow + pixHeight; i++) {
+        for (unsigned int j = startCol; j < startCol + pixWidth; j++) {
             sumIntensity += (double) get_image_intensity(image, i, j);
         }
     }
@@ -21,8 +18,8 @@ double calculateRMSE(Image *image, unsigned int startRow, unsigned int startCol,
     double numOfPixels = (double) pixHeight * pixWidth;
     double sumOfSquaredDiff = 0.0;
 
-    for (unsigned int i = startRow; i < pixHeight; i++) {
-        for (unsigned int j = startCol; j < pixWidth; j++) {
+    for (unsigned int i = startRow; i < startRow + pixHeight; i++) {
+        for (unsigned int j = startCol; j < startCol + pixWidth; j++) {
             sumOfSquaredDiff += pow(((double) get_image_intensity(image, i, j) - averageIntensity), 2);
         }
     }
@@ -32,36 +29,30 @@ double calculateRMSE(Image *image, unsigned int startRow, unsigned int startCol,
 //recursive function 
 QTNode *makeQTTree(Image *image, double max_rmse, unsigned int startRow, unsigned int startCol, unsigned int pixHeight, unsigned int pixWidth){
     double averageIntensity = getAverageIntensity(image, startRow, startCol, pixHeight, pixWidth);
+    double RMSE = calculateRMSE(image, startRow, startCol, pixHeight, pixWidth);
 
-    QTNode *temp = createNode((unsigned char)averageIntensity, 0, get_image_height(image), 0, get_image_width(image));
+    printf("startRow is %u and startCol is %u \n", startRow, startCol);
+    printf("  pixHeight is %u and pixWidth is %u \n", pixHeight, pixWidth);
+    printf("    average intensity is %f and RMSE is %f\n", averageIntensity, RMSE);
 
-    if(calculateRMSE(image, startRow, startCol, pixHeight, pixWidth) > max_rmse){
-        ///you know you have to split
-        //Calculate quadrant 1 (child 1)
-        //calculate child 1's startRow, StartCol, height, width
+    QTNode *temp = createNode((unsigned char)averageIntensity, startRow, pixHeight, startCol, pixWidth);
+
+    if(RMSE > max_rmse) {
+
         temp->child1 = makeQTTree(image, max_rmse, startRow, startCol, pixHeight / 2, pixWidth / 2);
 
-        if (pixWidth > 1)
+        if (pixWidth > 1) {
             temp->child2 = makeQTTree(image, max_rmse, startRow, startCol + pixWidth / 2, pixHeight / 2, pixWidth / 2);
+        }
 
-        if (pixHeight > 1)
+        if (pixHeight > 1) {
             temp->child3 = makeQTTree(image, max_rmse, startRow + pixHeight / 2, startCol, pixHeight / 2, pixWidth / 2);
+        }
 
-        if (pixHeight > 1 && pixWidth > 1)
+        if (pixHeight > 1 && pixWidth > 1) {
             temp->child4 = makeQTTree(image, max_rmse, startRow + pixHeight / 2, startCol + pixWidth / 2, pixHeight / 2, pixWidth / 2);
-
-        //if your child 2 width is greater than 0, make a QTTree. Otherwise, it will remain as null
-        //temp->child2 = makeQTTree(image, temp, max_rmse, childStartRow, childStartCol, childPixHeight, childPixWidth)
-
-        //if your child 3 height is greater than 0, make a QTTree. Otherwise, it will remain as null
-        //temp->child3 = makeQTTree(image, temp, max_rmse, childStartRow, childStartCol, childPixHeight, childPixWidth)
-
-        //if your child 4 height is greater than 0, make a QTTree. Otherwise, it will remain as null
-        //temp->child4 = makeQTTree(image, temp, max_rmse, childStartRow, childStartCol, childPixHeight, childPixWidth)
-
-        //every child must have startRow, startCol, pixHeight, pixWidth set specifically for them
+        }
     }
-    ///you dont have to split
     return temp;
 
 }
@@ -71,7 +62,7 @@ QTNode *create_quadtree(Image *image, double max_rmse) {
         return NULL;
     }
 
-    QTNode * root = makeQTTree(image, max_rmse, 0, 0, image->height, image->width);
+    QTNode *root = makeQTTree(image, max_rmse, 0, 0, image->height, image->width);
     return root;
 }
 
@@ -227,14 +218,14 @@ void traverseAllQTNodesAndSet2DArray(QTNode *root, unsigned char **array) {
     if (root == NULL){
         return;
     }
-    
+    //printf("traverse all qtnodes and set 2d array\n");
     //set all pixels in 2D array (starting row, starting column)
     unsigned int width = root->pixWidth;
     unsigned int height = root->pixHeight;
     unsigned char intensity = root->intensity;
     
-    for (unsigned int i = root->startRow; i < height; i++) {
-        for (unsigned int j = root->startCol; j < width; j++) {
+    for (unsigned int i = root->startRow; i < root->startRow + height; i++) {
+        for (unsigned int j = root->startCol; j < root->startCol + width; j++) {
             set_pixel_intensity(array, i, j, intensity); 
         }   
     }
@@ -266,7 +257,7 @@ void save_qtree_as_ppm(QTNode *root, char *filename) {
         array[i] = (unsigned char *)malloc(maxWidth * sizeof(unsigned char));
     }
 
-    // Initialize the array (optional)
+    // Initialize the array
     for (unsigned int i = 0; i < maxHeight; i++) {
         for (unsigned int j = 0; j < maxWidth; j++) {
             array[i][j] = 0;
