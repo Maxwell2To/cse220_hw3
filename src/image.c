@@ -112,17 +112,6 @@ void saveImageAsPPM (const Image *image, char *output_filename) {
     fclose(fPtr);
 }
 
-/*
-Given a string of N characters, the hide_message function encodes as many of these characters (in order, left-to-right) in the image as possible, 
-reserving space for the 8-bit ASCII code for the null character. 
-
-If the image can accommodate at most M ASCII codes (where M < N), including the ASCII code for the null character, 
-then encode the first M-1 characters of the input string and the null character. 
-
-You may assume that the image contains at least 8 pixels. Return the number of printable characters encoded in the output image, not including the null character.
-
-printable characters is pixelCount / 8
-*/
 unsigned int hide_message(char *message, char *input_filename, char *output_filename) {
 
     Image *image = load_image(input_filename);
@@ -141,13 +130,9 @@ unsigned int hide_message(char *message, char *input_filename, char *output_file
         pixelAmount -= 8;
         for (unsigned int i = 0; i < 8; i++) {
             unsigned int offset = i + pixelAmount - (pixelAmount % 8);  ///////// offset finds index of last 8 pixels to encode with 0 at the end
-            printf("The offset is %u \n", offset);
-            printf("The original intensity is %u \n", image->pixelIntensityArr[offset]);
             if ((image->pixelIntensityArr)[offset] % 2 == 1) {        
                 (image->pixelIntensityArr)[offset]--;
             }
-            printf("The new intensity is %u \n", image->pixelIntensityArr[offset]);
-
         }
     }
 
@@ -182,15 +167,6 @@ unsigned int hide_message(char *message, char *input_filename, char *output_file
             }
             ////////////////////////////// by this point, each pixel intensity in temp should have the char's binary encoded
         }
-        printf("offset is %u\n", i);
-        printf("O is %u, A is %u \n", image->pixelIntensityArr[i], temp[0]);
-        printf("O is %u, A is %u  \n", image->pixelIntensityArr[i + 1], temp[1]);
-        printf("O is %u, A is %u  \n", image->pixelIntensityArr[i + 2], temp[2]);
-        printf("O is %u, A is %u  \n", image->pixelIntensityArr[i + 3], temp[3]);
-        printf("O is %u, A is %u  \n", image->pixelIntensityArr[i + 4], temp[4]);
-        printf("O is %u, A is %u  \n", image->pixelIntensityArr[i + 5], temp[5]);
-        printf("O is %u, A is %u  \n", image->pixelIntensityArr[i + 6], temp[6]);
-        printf("O is %u, A is %u  \n", image->pixelIntensityArr[i + 7], temp[7]);
 
         (image->pixelIntensityArr)[i] = temp[0];
         (image->pixelIntensityArr)[i + 1] = temp[1];
@@ -202,18 +178,11 @@ unsigned int hide_message(char *message, char *input_filename, char *output_file
         (image->pixelIntensityArr)[i + 7] = temp[7];
 
     }
-    saveImageAsPPM (image, output_filename);
+    saveImageAsPPM(image, output_filename);
     delete_image(image);
     return messageCharCount;
 }
 
-/*
-The reveal_message function opens the file of the given filename, extracts the message hidden in the image, 
-and returns a new string containing the message. 
-
-Assume that only printable characters (and spaces) are hidden in the message and that the message is terminated with a null character.
-
-*/
 char *reveal_message(char *input_filename) {
     Image *image = load_image(input_filename);
     unsigned int pixelAmount = image->width * image->height;
@@ -241,17 +210,6 @@ char *reveal_message(char *input_filename) {
         temp[5] = (image->pixelIntensityArr)[i + 5];
         temp[6] = (image->pixelIntensityArr)[i + 6];
         temp[7] = (image->pixelIntensityArr)[i + 7];
-
-        printf("//////////////////////////////////////////////////////////////////////////");
-        printf("offset is %u\n", i);
-        printf("last bit is %u  \n", temp[0] >> 7 & 1);
-        printf("last bit is %u  \n", temp[1] >> 7 & 1);
-        printf("last bit is %u  \n", temp[2] >> 7 & 1);
-        printf("last bit is %u  \n", temp[3] >> 7 & 1);
-        printf("last bit is %u  \n", temp[4] >> 7 & 1);
-        printf("last bit is %u  \n", temp[5] >> 7 & 1);
-        printf("last bit is %u  \n", temp[6] >> 7 & 1);
-        printf("last bit is %u  \n", temp[7] >> 7 & 1);
         
         int asciiIndex = 0;
         for (int j = 0; j < 8; j++) {
@@ -260,20 +218,113 @@ char *reveal_message(char *input_filename) {
         }
         stringBuff[charCounter] = asciiIndex;
         charCounter++;
-        printf("%c\n", asciiIndex);
     }
     delete_image(image);
     return stringBuff;
 }
 
+void encodeValueInto8pixels (unsigned char val, unsigned char *pixels) {
+    unsigned int temp[8];
+    unsigned int tempBinaryStorage[8];
+
+    temp[0] = *(pixels);
+    temp[1] = *(pixels + 1);
+    temp[2] = *(pixels + 2);
+    temp[3] = *(pixels + 3);
+    temp[4] = *(pixels + 4);
+    temp[5] = *(pixels + 5);
+    temp[6] = *(pixels + 6);
+    temp[7] = *(pixels + 7);
+
+    // this loop turns a single char from message into the binary bits
+    for (int j = 7; j >= 0; j--) {
+        tempBinaryStorage[7 - j] = (val >> j) & 1;  ////////////// this is supposed to store all the individual binary values that make up the char 
+    }
+
+    /// This loop does the encoding
+    for (int j = 0; j < 8; j++) {
+        unsigned int oneOrZero = temp[j] % 2;    /////////////this figures out if the last bit is 1 or 0
+
+        if (oneOrZero > tempBinaryStorage[j]) { /////// since these values can only be either 1 or 0, it is self explanatory
+            temp[j] -= 1;
+        }
+        else if (oneOrZero < tempBinaryStorage[j]) {
+            temp[j] += 1;
+        }
+    }
+
+    for (int j = 0; j < 8; j++) {
+        pixels[j] = temp[j];
+    }
+}
+
 unsigned int hide_image(char *secret_image_filename, char *input_filename, char *output_filename) {
-    (void)secret_image_filename;
-    (void)input_filename;
-    (void)output_filename;
-    return 10;
+    Image *secretImage = load_image(secret_image_filename);
+    unsigned int secretPixelAmount = secretImage->width * secretImage->height;
+
+    Image *inputImage = load_image(input_filename);
+    unsigned int inputPixelAmount = inputImage->width * inputImage->height;
+    
+    if (secretPixelAmount > (inputPixelAmount * 8) + 16) {  //////////////// you need 8 pixels to hide one pixel
+        delete_image(secretImage);
+        delete_image(inputImage); 
+        return 0;
+    }
+
+    encodeValueInto8pixels (secretImage->width, inputImage->pixelIntensityArr + 0);    
+    encodeValueInto8pixels (secretImage->height, inputImage->pixelIntensityArr + 8);    
+
+    unsigned int offset = 16;
+    for (unsigned int i = 0; i < secretPixelAmount; i++, offset+=8) {
+        encodeValueInto8pixels (secretImage->pixelIntensityArr[i], inputImage->pixelIntensityArr + offset);    
+    }
+
+    saveImageAsPPM(inputImage, output_filename);
+    delete_image(secretImage);
+    delete_image(inputImage);    
+    return 1;
+}
+
+unsigned char decode8pixels(unsigned char *pixels){
+
+    unsigned int tempBinaryStorage[8];
+
+    for (int i = 0; i < 8; i++) {
+        tempBinaryStorage[i] = *(pixels + i) % 2;  
+    }
+
+    unsigned char asciiIndex = 0;
+    for (int j = 0; j < 8; j++) {
+        unsigned int c = (tempBinaryStorage[j]);
+        asciiIndex += c * pow(2, 8 - 1 - j);
+    }
+    return asciiIndex;
 }
 
 void reveal_image(char *input_filename, char *output_filename) {
-    (void)input_filename;
-    (void)output_filename;
+
+    Image *inputImage = load_image(input_filename);
+
+    unsigned char secretWidth = decode8pixels(inputImage->pixelIntensityArr);
+    printf("secretWidth is %u\n", secretWidth);
+    unsigned char secretHeight = decode8pixels(inputImage->pixelIntensityArr + 8);
+    printf("secretHeight is %u\n", secretHeight);
+    unsigned int secretPixelAmount = secretWidth * secretHeight;
+
+    Image *secretImage = malloc(sizeof(Image));
+    secretImage->filename = malloc(strlen(output_filename) + 1);    ///////////// allocates memory for file name
+    strncpy(secretImage->filename, output_filename, strlen(output_filename));
+    secretImage->pixelIntensityArr = malloc(secretPixelAmount * sizeof(unsigned char));
+    secretImage->width = secretWidth;
+    secretImage->height = secretHeight;
+
+    unsigned int offset = 16;
+    for (unsigned int i = 0; i < secretPixelAmount; i++, offset+=8) {
+        printf("i is %u\n", i);
+        secretImage->pixelIntensityArr[i] = decode8pixels(inputImage->pixelIntensityArr + offset);
+    }
+
+    saveImageAsPPM(secretImage, output_filename);
+    delete_image(secretImage);
+    delete_image(inputImage);
 }
