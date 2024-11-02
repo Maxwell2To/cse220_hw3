@@ -302,7 +302,6 @@ unsigned char decode8pixels(unsigned char *pixels){
 }
 
 void reveal_image(char *input_filename, char *output_filename) {
-
     Image *inputImage = load_image(input_filename);
 
     unsigned char secretWidth = decode8pixels(inputImage->pixelIntensityArr);
