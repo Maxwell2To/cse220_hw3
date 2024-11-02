@@ -264,24 +264,26 @@ unsigned int hide_image(char *secret_image_filename, char *input_filename, char 
 
     Image *inputImage = load_image(input_filename);
     unsigned int inputPixelAmount = inputImage->width * inputImage->height;
-    
-    if (secretPixelAmount > (inputPixelAmount * 8) + 16) {  //////////////// you need 8 pixels to hide one pixel
+printf("hi 0\n");
+printf("secret image size is %u and input image size is %u\n", secretPixelAmount, inputPixelAmount);
+    if (secretPixelAmount * 8 > inputPixelAmount - 16) {  //////////////// you need 8 pixels to hide one pixel
         delete_image(secretImage);
         delete_image(inputImage); 
         return 0;
     }
-
+printf("hi 1\n");
     encodeValueInto8pixels (secretImage->width, inputImage->pixelIntensityArr + 0);    
     encodeValueInto8pixels (secretImage->height, inputImage->pixelIntensityArr + 8);    
-
+printf("hi 2\n");
     unsigned int offset = 16;
     for (unsigned int i = 0; i < secretPixelAmount; i++, offset+=8) {
         encodeValueInto8pixels (secretImage->pixelIntensityArr[i], inputImage->pixelIntensityArr + offset);    
     }
-
+printf("hi 3\n");
     saveImageAsPPM(inputImage, output_filename);
     delete_image(secretImage);
     delete_image(inputImage);    
+printf("hi 4\n");
     return 1;
 }
 
@@ -319,7 +321,6 @@ void reveal_image(char *input_filename, char *output_filename) {
 
     unsigned int offset = 16;
     for (unsigned int i = 0; i < secretPixelAmount; i++, offset+=8) {
-        printf("i is %u\n", i);
         secretImage->pixelIntensityArr[i] = decode8pixels(inputImage->pixelIntensityArr + offset);
     }
 
