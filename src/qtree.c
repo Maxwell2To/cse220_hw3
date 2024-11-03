@@ -90,10 +90,10 @@ QTNode *makeQTTree(Image *image, double max_rmse, unsigned int startRow, unsigne
 
 QTNode *create_quadtree(Image *image, double max_rmse) {
     if (image == NULL){
-        printf("it is null\n");
+        //printf("it is null\n");
         return NULL;
     }
-        printf("it is not null\n");
+        //printf("it is not null\n");
     QTNode *root = makeQTTree(image, max_rmse, 0, 0, image->height, image->width);
     return root;
 }
@@ -256,7 +256,7 @@ void traverseAllQTNodesAndSet2DArray(QTNode *root, unsigned char **array) {
     unsigned int height = root->pixHeight;
     unsigned char intensity = root->intensity;
 
-    printf("startRow: %u    startCol: %u    height: %u    width: %u \n", root->startRow, root->startCol, height, width);
+    //printf("startRow: %u    startCol: %u    height: %u    width: %u \n", root->startRow, root->startCol, height, width);
     //printf("root->startRow + height: %u     ", root->startRow + height - 1);
     //printf("root->startCol + width: %u\n", root->startCol + width - 1);
 
