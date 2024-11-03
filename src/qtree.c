@@ -70,11 +70,11 @@ QTNode *makeQTTree(Image *image, double max_rmse, unsigned int startRow, unsigne
         unsigned int child1Width = pixWidth / 2;
         unsigned int child1Height = pixHeight / 2;    
 
-        unsigned int child2Width = pixWidth - pixWidth / 2;
-        unsigned int child2Height = pixHeight / 2; 
+        unsigned int child2Width = pixWidth / 2;
+        unsigned int child2Height = pixHeight - pixHeight / 2; 
 
-        unsigned int child3Width = pixWidth / 2;
-        unsigned int child3Height = pixHeight - pixHeight / 2; 
+        unsigned int child3Width = pixWidth - pixWidth / 2;
+        unsigned int child3Height = pixHeight / 2; 
 
         unsigned int child4Width = pixWidth - pixWidth / 2;
         unsigned int child4Height = pixHeight - pixHeight / 2;   
