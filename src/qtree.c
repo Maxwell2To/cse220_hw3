@@ -36,18 +36,6 @@ QTNode *makeQTTree(Image *image, double max_rmse, unsigned int startRow, unsigne
     if(RMSE > max_rmse) {
         //printf("you got in the if statement\n");
  /*   
-        unsigned int child1Width = pixWidth - pixWidth / 2;
-        unsigned int child1Height = pixHeight - pixHeight / 2;   
-
-        unsigned int child2Width = pixWidth - child1Width;
-        unsigned int child2Height = child1Height; 
-
-        unsigned int child3Width = child1Width;
-        unsigned int child3Height = pixHeight - child1Height; 
-
-        unsigned int child4Width = pixWidth - child3Width;
-        unsigned int child4Height = pixHeight - child2Height;     
-*/
         double child1Width = pixWidth - pixWidth / 2;
         double child1Height = pixHeight - pixHeight / 2;   
 
@@ -58,9 +46,20 @@ QTNode *makeQTTree(Image *image, double max_rmse, unsigned int startRow, unsigne
         double child3Height = pixHeight - child1Height; 
 
         double child4Width = pixWidth - child3Width;
-        double child4Height = pixHeight - child2Height; 
-       
+        double child4Height = pixHeight - child2Height;   
+*/
+        unsigned int child1Width = pixWidth - pixWidth / 2;
+        unsigned int child1Height = pixHeight - pixHeight / 2;   
 
+        unsigned int child2Width = pixWidth - child1Width;
+        unsigned int child2Height = child1Height; 
+
+        unsigned int child3Width = child1Width;
+        unsigned int child3Height = pixHeight - child1Height; 
+
+        unsigned int child4Width = pixWidth - child3Width;
+        unsigned int child4Height = pixHeight - child2Height;   
+       
         temp->child1 = makeQTTree(image, max_rmse, startRow, startCol, 
             child1Height, child1Width);
 
