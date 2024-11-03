@@ -35,7 +35,7 @@ QTNode *makeQTTree(Image *image, double max_rmse, unsigned int startRow, unsigne
     //printf("RMSE is %f, average is %f\n", RMSE,averageIntensity);
     if(RMSE > max_rmse) {
         //printf("you got in the if statement\n");
-    
+ /*   
         unsigned int child1Width = pixWidth - pixWidth / 2;
         unsigned int child1Height = pixHeight - pixHeight / 2;   
 
@@ -47,6 +47,18 @@ QTNode *makeQTTree(Image *image, double max_rmse, unsigned int startRow, unsigne
 
         unsigned int child4Width = pixWidth - child3Width;
         unsigned int child4Height = pixHeight - child2Height;     
+*/
+        double child1Width = pixWidth - pixWidth / 2;
+        double child1Height = pixHeight - pixHeight / 2;   
+
+        double child2Width = pixWidth - child1Width;
+        double child2Height = child1Height; 
+
+        double child3Width = child1Width;
+        double child3Height = pixHeight - child1Height; 
+
+        double child4Width = pixWidth - child3Width;
+        double child4Height = pixHeight - child2Height; 
        
 
         temp->child1 = makeQTTree(image, max_rmse, startRow, startCol, 
@@ -71,22 +83,6 @@ QTNode *makeQTTree(Image *image, double max_rmse, unsigned int startRow, unsigne
     }
     return temp;
 }
-/*if (pixWidth > 1) {
-            if(pixHeight / 2 > 0) 
-                temp->child2 = makeQTTree(image, max_rmse, startRow, startCol + pixWidth / 2 + pixWmod, 
-                    pixHeight / 2 + pixHmod, pixWidth / 2 + pixWmod);
-        }
-
-        if (pixHeight > 1) {
-            if(pixWidth / 2 > 0) 
-                temp->child3 = makeQTTree(image, max_rmse, startRow + pixHeight / 2 + pixHmod, startCol, 
-                    pixHeight / 2 + pixHmod, pixWidth / 2 + pixWmod);
-        }
-
-        if (pixHeight > 1 && pixWidth > 1) {
-            temp->child4 = makeQTTree(image, max_rmse, startRow + pixHeight / 2 + pixHmod, startCol + pixWidth / 2 + pixWmod, 
-                pixHeight / 2 + pixHmod, pixWidth / 2 + pixWmod);
-        }*/
 
 QTNode *create_quadtree(Image *image, double max_rmse) {
     if (image == NULL){
