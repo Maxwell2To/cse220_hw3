@@ -31,37 +31,69 @@ QTNode *makeQTTree(Image *image, double max_rmse, unsigned int startRow, unsigne
     double averageIntensity = getAverageIntensity(image, startRow, startCol, pixHeight, pixWidth);
     double RMSE = calculateRMSE(image, startRow, startCol, pixHeight, pixWidth);
 
-    printf("startRow is %u and startCol is %u \n", startRow, startCol);
-    printf("  pixHeight is %u and pixWidth is %u \n", pixHeight, pixWidth);
-    printf("    average intensity is %f and RMSE is %f\n", averageIntensity, RMSE);
-
     QTNode *temp = createNode((unsigned char)averageIntensity, startRow, pixHeight, startCol, pixWidth);
-
+    //printf("RMSE is %f, average is %f\n", RMSE,averageIntensity);
     if(RMSE > max_rmse) {
+        //printf("you got in the if statement\n");
+    
+        unsigned int child1Width = pixWidth - pixWidth / 2;
+        unsigned int child1Height = pixHeight - pixHeight / 2;   
 
-        temp->child1 = makeQTTree(image, max_rmse, startRow, startCol, pixHeight / 2, pixWidth / 2);
+        unsigned int child2Width = pixWidth - child1Width;
+        unsigned int child2Height = child1Height; 
+
+        unsigned int child3Width = child1Width;
+        unsigned int child3Height = pixHeight - child1Height; 
+
+        unsigned int child4Width = pixWidth - child3Width;
+        unsigned int child4Height = pixHeight - child2Height;     
+       
+
+        temp->child1 = makeQTTree(image, max_rmse, startRow, startCol, 
+            child1Height, child1Width);
 
         if (pixWidth > 1) {
-            temp->child2 = makeQTTree(image, max_rmse, startRow, startCol + pixWidth / 2, pixHeight / 2, pixWidth / 2);
+            if(child2Height > 0) 
+                temp->child2 = makeQTTree(image, max_rmse, startRow, startCol + child1Width, 
+                    child2Height, child2Width);
         }
 
         if (pixHeight > 1) {
-            temp->child3 = makeQTTree(image, max_rmse, startRow + pixHeight / 2, startCol, pixHeight / 2, pixWidth / 2);
+            if(child3Width > 0) 
+                temp->child3 = makeQTTree(image, max_rmse, startRow + child1Height, startCol, 
+                    child3Height, child3Width);
         }
 
         if (pixHeight > 1 && pixWidth > 1) {
-            temp->child4 = makeQTTree(image, max_rmse, startRow + pixHeight / 2, startCol + pixWidth / 2, pixHeight / 2, pixWidth / 2);
+            temp->child4 = makeQTTree(image, max_rmse, startRow + child1Height, startCol + child1Width, 
+                child4Height, child4Width);
         }
     }
     return temp;
-
 }
+/*if (pixWidth > 1) {
+            if(pixHeight / 2 > 0) 
+                temp->child2 = makeQTTree(image, max_rmse, startRow, startCol + pixWidth / 2 + pixWmod, 
+                    pixHeight / 2 + pixHmod, pixWidth / 2 + pixWmod);
+        }
+
+        if (pixHeight > 1) {
+            if(pixWidth / 2 > 0) 
+                temp->child3 = makeQTTree(image, max_rmse, startRow + pixHeight / 2 + pixHmod, startCol, 
+                    pixHeight / 2 + pixHmod, pixWidth / 2 + pixWmod);
+        }
+
+        if (pixHeight > 1 && pixWidth > 1) {
+            temp->child4 = makeQTTree(image, max_rmse, startRow + pixHeight / 2 + pixHmod, startCol + pixWidth / 2 + pixWmod, 
+                pixHeight / 2 + pixHmod, pixWidth / 2 + pixWmod);
+        }*/
 
 QTNode *create_quadtree(Image *image, double max_rmse) {
     if (image == NULL){
+        printf("it is null\n");
         return NULL;
     }
-
+        printf("it is not null\n");
     QTNode *root = makeQTTree(image, max_rmse, 0, 0, image->height, image->width);
     return root;
 }
@@ -223,10 +255,16 @@ void traverseAllQTNodesAndSet2DArray(QTNode *root, unsigned char **array) {
     unsigned int width = root->pixWidth;
     unsigned int height = root->pixHeight;
     unsigned char intensity = root->intensity;
-    
+
+    printf("startRow: %u    startCol: %u    height: %u    width: %u \n", root->startRow, root->startCol, height, width);
+    //printf("root->startRow + height: %u     ", root->startRow + height - 1);
+    //printf("root->startCol + width: %u\n", root->startCol + width - 1);
+
     for (unsigned int i = root->startRow; i < root->startRow + height; i++) {
+        //printf("i: %d\n", i);
         for (unsigned int j = root->startCol; j < root->startCol + width; j++) {
             set_pixel_intensity(array, i, j, intensity); 
+            //printf("    j: %d\n", j);
         }   
     }
     traverseAllQTNodesAndSet2DArray(root->child1, array);
@@ -299,14 +337,14 @@ void convertQTNodesBackToEncoded(QTNode *root, FILE *fPtr) {
     if (root == NULL) {
         return;
     }
-
+    //printf("checkpoint1\n");
     if (root->child1 == NULL && root->child2 == NULL && root->child3 == NULL && root->child4 == NULL) {
         fprintf(fPtr, "L %u %u %u %u %u\n", root->intensity, root->startRow, root->pixHeight, root->startCol, root->pixWidth); 
         return;
     }
     else
         fprintf(fPtr, "N %u %u %u %u %u\n", root->intensity, root->startRow, root->pixHeight, root->startCol, root->pixWidth); 
-
+    //printf("checkpoint2\n");
     convertQTNodesBackToEncoded(root->child1, fPtr);
     convertQTNodesBackToEncoded(root->child2, fPtr);
     convertQTNodesBackToEncoded(root->child3, fPtr);
@@ -315,7 +353,7 @@ void convertQTNodesBackToEncoded(QTNode *root, FILE *fPtr) {
 
 void save_preorder_qt(QTNode *root, char *filename) {
     FILE *fPtr = fopen(filename, "w");
-
+printf("filename %s\n", filename);
     if (fPtr == NULL) {
         printf("Error opening file!\n");
         return;
