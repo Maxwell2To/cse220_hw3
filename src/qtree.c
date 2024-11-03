@@ -176,9 +176,6 @@ QTNode* createNode(double intensity, unsigned int startRow, unsigned int pixHeig
     newNode->pixHeight = pixHeight;
     newNode->startCol = startCol;
     newNode->pixWidth = pixWidth;
-    
-    //if (newNode->intensity == 0){printf("startRow: %u    startCol: %u    pixHeight: %u    pixWidth: %u\n", startRow, startCol, pixHeight, pixWidth);}
-
 
     newNode->child1 = NULL;  
     newNode->child2 = NULL;  
@@ -306,9 +303,8 @@ void save_qtree_as_ppm(QTNode *root, char *filename) {
         for (unsigned int j = 0; j < maxWidth; j++) {
             ///////////////////////////////fprintf three times on each pixel
             ///////////////////////////////each pixel is array[i][j]
-            fprintf(fPtr, "%u %u %u ", array[i][j], array[i][j], array[i][j]);
+            fprintf(fPtr, "%u %u %u\n", array[i][j], array[i][j], array[i][j]);
         }
-        fprintf(fPtr,"\n");
     }
     /////////////////////////////////dont need the 2D array anymore so we free up memory
     for (unsigned int i = 0; i < maxHeight; i++) {
