@@ -171,7 +171,7 @@ unsigned int findMaxHeight(QTNode *root){
 
 QTNode* createNode(double intensity, unsigned int startRow, unsigned int pixHeight, unsigned int startCol, unsigned int pixWidth) {
     QTNode *newNode = (QTNode*)malloc(sizeof(QTNode));
-    newNode->intensity = (unsigned char) round(intensity);
+    newNode->intensity = (unsigned char) intensity;
     newNode->startRow = startRow;
     newNode->pixHeight = pixHeight;
     newNode->startCol = startCol;
