@@ -78,18 +78,18 @@ QTNode *makeQTTree(Image *image, double max_rmse, unsigned int startRow, unsigne
 
         if (pixWidth > 1) {
             if(child2Height > 0) 
-                temp->child2 = makeQTTree(image, max_rmse, startRow, startCol + child1Width + child1Width % 2, 
+                temp->child2 = makeQTTree(image, max_rmse, startRow, startCol + child1Width, 
                     child2Height, child2Width);
         }
 
         if (pixHeight > 1) {
             if(child3Width > 0) 
-                temp->child3 = makeQTTree(image, max_rmse, startRow + child1Height + child1Height % 2, startCol, 
+                temp->child3 = makeQTTree(image, max_rmse, startRow + child1Height, startCol, 
                     child3Height, child3Width);
         }
 
         if (pixHeight > 1 && pixWidth > 1) {
-            temp->child4 = makeQTTree(image, max_rmse, startRow + child1Height + child1Height % 2, startCol + child1Width + child1Width % 2, 
+            temp->child4 = makeQTTree(image, max_rmse, startRow + child1Height, startCol + child1Width, 
                 child4Height, child4Width);
         }
     }
