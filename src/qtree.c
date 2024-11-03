@@ -1,6 +1,6 @@
 #include "qtree.h"
 #include "math.h"
-QTNode* createNode(unsigned char intensity, unsigned int startRow, unsigned int pixHeight, unsigned int startCol, unsigned int pixWidth);
+QTNode* createNode(double intensity, unsigned int startRow, unsigned int pixHeight, unsigned int startCol, unsigned int pixWidth);
 
 double getAverageIntensity(Image *image, unsigned int startRow, unsigned int startCol, unsigned int pixHeight, unsigned int pixWidth){
     double numOfPixels = (double) pixHeight * pixWidth;
@@ -13,8 +13,7 @@ double getAverageIntensity(Image *image, unsigned int startRow, unsigned int sta
     return sumIntensity / numOfPixels;
 }
 
-double calculateRMSE(Image *image, unsigned int startRow, unsigned int startCol, unsigned int pixHeight, unsigned int pixWidth){
-    double averageIntensity = getAverageIntensity(image, startRow, startCol, pixHeight, pixWidth);
+double calculateRMSE(Image *image, unsigned int startRow, unsigned int startCol, unsigned int pixHeight, unsigned int pixWidth, double averageIntensity){
     double numOfPixels = (double) pixHeight * pixWidth;
     double sumOfSquaredDiff = 0.0;
 
@@ -23,15 +22,15 @@ double calculateRMSE(Image *image, unsigned int startRow, unsigned int startCol,
             sumOfSquaredDiff += pow(((double) get_image_intensity(image, i, j) - averageIntensity), 2);
         }
     }
-    return sqrt(sumOfSquaredDiff/numOfPixels);
+    return sqrt(sumOfSquaredDiff / numOfPixels);
 }
 
 //recursive function 
 QTNode *makeQTTree(Image *image, double max_rmse, unsigned int startRow, unsigned int startCol, unsigned int pixHeight, unsigned int pixWidth){
     double averageIntensity = getAverageIntensity(image, startRow, startCol, pixHeight, pixWidth);
-    double RMSE = calculateRMSE(image, startRow, startCol, pixHeight, pixWidth);
+    double RMSE = calculateRMSE(image, startRow, startCol, pixHeight, pixWidth, averageIntensity);
 
-    QTNode *temp = createNode((unsigned char)averageIntensity, startRow, pixHeight, startCol, pixWidth);
+    QTNode *temp = createNode(averageIntensity, startRow, pixHeight, startCol, pixWidth);
     //printf("RMSE is %f, average is %f\n", RMSE,averageIntensity);
     if(RMSE > max_rmse) {
         //printf("you got in the if statement\n");
@@ -170,9 +169,9 @@ unsigned int findMaxHeight(QTNode *root){
     return getMax(getMax(getMax(getMax(currentNodeHeight, height1), height2), height3), height4);
 }
 
-QTNode* createNode(unsigned char intensity, unsigned int startRow, unsigned int pixHeight, unsigned int startCol, unsigned int pixWidth) {
+QTNode* createNode(double intensity, unsigned int startRow, unsigned int pixHeight, unsigned int startCol, unsigned int pixWidth) {
     QTNode *newNode = (QTNode*)malloc(sizeof(QTNode));
-    newNode->intensity = intensity;
+    newNode->intensity = (unsigned char)intensity;
     newNode->startRow = startRow;
     newNode->pixHeight = pixHeight;
     newNode->startCol = startCol;
