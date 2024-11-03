@@ -119,14 +119,15 @@ unsigned int hide_message(char *message, char *input_filename, char *output_file
     if (image == NULL) {
         return 0;
     }
-
+    printf("image is not null\n");
     unsigned int pixelAmount = image->width * image->height;
-    unsigned int temp[8];
-    int tempBinaryStorageForChar[8];
-    int messageCharCount = 0;
+    unsigned int messageCharCount = 0;
+    int tooSmallBool = 0;
 
-    //printf("The pixelAmount / 8 is %u and sizeof message is %lu\n", pixelAmount / 8, sizeof(message));
-    if (pixelAmount / 8 < sizeof(message) * 8) {
+    printf("The pixelAmount / 8 is %u and length message is %lu\n", pixelAmount / 8, strlen(message));
+    unsigned int pixelsNeededForMessage = strlen(message) * 8 + 8;
+    if (pixelAmount < pixelsNeededForMessage) {
+        tooSmallBool++;
         pixelAmount -= 8;
         for (unsigned int i = 0; i < 8; i++) {
             unsigned int offset = i + pixelAmount - (pixelAmount % 8);  ///////// offset finds index of last 8 pixels to encode with 0 at the end
@@ -136,10 +137,19 @@ unsigned int hide_message(char *message, char *input_filename, char *output_file
         }
     }
 
-    for (unsigned int i = 0; i < pixelAmount - (pixelAmount % 8); i+=8) {
+printf("checkpoint1: pixelAmount %u\n", pixelAmount);
 
+    for (unsigned int i = 0; i < pixelAmount - (pixelAmount % 8); i+=8) {
         char messageChar = message[messageCharCount];  /////////////// one character at a time from message
         messageCharCount++;
+
+        if (messageCharCount > strlen(message) + 1){
+            break;
+        }
+        
+        printf("messageChar %c\n", messageChar);
+        unsigned int temp[8];
+        unsigned int tempBinaryStorageForChar[8];
 
         temp[0] = (image->pixelIntensityArr)[i];
         temp[1] = (image->pixelIntensityArr)[i + 1];
@@ -157,7 +167,7 @@ unsigned int hide_message(char *message, char *input_filename, char *output_file
 
         /// This loop does the encoding
         for (int j = 0; j < 8; j++) {
-            int oneOrZero = temp[j] % 2;    /////////////this figures out if the last bit is 1 or 0
+            unsigned int oneOrZero = temp[j] % 2;    /////////////this figures out if the last bit is 1 or 0
 
             if (oneOrZero > tempBinaryStorageForChar[j]) { /////// since these values can only be either 1 or 0, it is self explanatory
                 temp[j] -= 1;
@@ -178,9 +188,12 @@ unsigned int hide_message(char *message, char *input_filename, char *output_file
         (image->pixelIntensityArr)[i + 7] = temp[7];
 
     }
+
     saveImageAsPPM(image, output_filename);
     delete_image(image);
-    return messageCharCount;
+    if (tooSmallBool > 0)
+        return pixelAmount / 8;
+    return (unsigned int)strlen(message);
 }
 
 char *reveal_message(char *input_filename) {
