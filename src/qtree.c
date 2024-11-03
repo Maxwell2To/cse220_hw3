@@ -47,10 +47,8 @@ QTNode *makeQTTree(Image *image, double max_rmse, unsigned int startRow, unsigne
         double child4Width = pixWidth - child3Width;
         double child4Height = pixHeight - child2Height;   
 */
-        //unsigned int child1Width = pixWidth - pixWidth / 2;
-        //unsigned int child1Height = pixHeight - pixHeight / 2;   
-        unsigned int child1Width = pixWidth / 2;
-        unsigned int child1Height = pixHeight / 2;   
+        unsigned int child1Width = pixWidth - pixWidth / 2;
+        unsigned int child1Height = pixHeight - pixHeight / 2;    
 
         unsigned int child2Width = pixWidth - child1Width;
         unsigned int child2Height = child1Height; 
@@ -173,11 +171,14 @@ unsigned int findMaxHeight(QTNode *root){
 
 QTNode* createNode(double intensity, unsigned int startRow, unsigned int pixHeight, unsigned int startCol, unsigned int pixWidth) {
     QTNode *newNode = (QTNode*)malloc(sizeof(QTNode));
-    newNode->intensity = (unsigned char)intensity;
+    newNode->intensity = (unsigned char) round(intensity);
     newNode->startRow = startRow;
     newNode->pixHeight = pixHeight;
     newNode->startCol = startCol;
     newNode->pixWidth = pixWidth;
+    
+    //if (newNode->intensity == 0){printf("startRow: %u    startCol: %u    pixHeight: %u    pixWidth: %u\n", startRow, startCol, pixHeight, pixWidth);}
+
 
     newNode->child1 = NULL;  
     newNode->child2 = NULL;  
